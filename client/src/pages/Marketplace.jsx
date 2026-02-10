@@ -71,14 +71,18 @@ const Marketplace = () => {
       return;
     }
     const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = 'hi-IN';
+    // Default to English (India) for better accent support
+    recognition.lang = 'en-IN'; 
     recognition.onstart = () => setIsListening(true);
     recognition.onend = () => setIsListening(false);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript.toLowerCase();
-      // Simple translation check
-      const translated = transcript.split(' ').map(word => HINDI_DICT[word] || word).join(' ');
-      setSearchTerm(translated);
+      
+      // Attempt conversion if it's a known Hindi word, otherwise use English
+      const words = transcript.split(' ');
+      const translated = words.map(word => HINDI_DICT[word] || word).join(' ');
+      
+      setSearchTerm(translated); // Will default to English if no Hindi match
     };
     recognition.start();
   };
