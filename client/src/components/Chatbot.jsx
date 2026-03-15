@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Bot, User, Mic } from 'lucide-react';
-import { fetchFinancials, fetchVelocityReport } from '../api';
+import { fetchFinancials, fetchVelocityReport, fetchMyProducts, fetchExpiryAlerts, fetchOrders, fetchRecommendations } from '../api';
+import { useAuth } from '../context/AuthContext';
 
 const Chatbot = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { text: "Hi! I am your Smart Kirana AI Support. Feel free to ask me anything about the platform!", sender: 'bot' }
@@ -13,15 +15,30 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && !contextData) {
+    if (isOpen && !contextData && user) {
       Promise.all([
         fetchFinancials().then(r => r.data).catch(() => null),
-        fetchVelocityReport().then(r => r.data).catch(() => null)
-      ]).then(([financials, velocity]) => {
-        setContextData({ financials, velocity });
+        fetchVelocityReport().then(r => r.data).catch(() => null),
+        fetchMyProducts().then(r => r.data).catch(() => []),
+        fetchExpiryAlerts().then(r => r.data).catch(() => []),
+        fetchOrders().then(r => r.data).catch(() => []),
+        fetchRecommendations(user.id).then(r => r.data?.rules).catch(() => [])
+      ]).then(([financials, velocity, products, expiryAlerts, orders, recommendations]) => {
+        const inventoryCount = Array.isArray(products) ? products.length : 0;
+        const lowStockCount = Array.isArray(products) ? products.filter(p => p.stock <= (p.minStockThreshold || 10)).length : 0;
+        const riskAlertCount = Array.isArray(expiryAlerts) ? expiryAlerts.length : 0;
+        
+        setContextData({ 
+          financials, 
+          velocity, 
+          inventoryStats: { totalProducts: inventoryCount, lowStockItems: lowStockCount },
+          expiryAlerts: riskAlertCount,
+          recentOrdersCount: Array.isArray(orders) ? orders.length : 0,
+          marketBasketRecommendations: recommendations 
+        });
       });
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   const speak = (text) => {
     const synth = window.speechSynthesis;
