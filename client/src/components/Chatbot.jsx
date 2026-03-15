@@ -79,22 +79,27 @@ const Chatbot = () => {
       });
 
       const data = await response.json();
+      
       let botResponse = "I'm sorry, I encountered an error. Please try again.";
       if (data.candidates && data.candidates[0].content.parts[0].text) {
         botResponse = data.candidates[0].content.parts[0].text;
+      } else if (data.error) {
+        throw new Error(`Google API Error: ${data.error.message}`);
       }
 
       setMessages(prev => {
         const withoutTyping = prev.filter(m => !m.isTyping);
         return [...withoutTyping, { text: botResponse, sender: 'bot' }];
       });
-      speak(botResponse);
+      try { speak(botResponse); } catch(e) {}
     } catch (err) {
+      console.error("Chatbot API Error:", err);
+      const errMsg = err.message || "Unknown error occurred";
       setMessages(prev => {
         const withoutTyping = prev.filter(m => !m.isTyping);
-        return [...withoutTyping, { text: "I am having trouble connecting to AI services right now.", sender: 'bot' }];
+        return [...withoutTyping, { text: `System Error: ${errMsg}. Check console for details.`, sender: 'bot' }];
       });
-      speak("I am having trouble connecting to AI services right now.");
+      try { speak("Error connecting to AI."); } catch(e) {}
     }
   };
 
