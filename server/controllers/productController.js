@@ -95,12 +95,16 @@ exports.executeVoiceAction = async (req, res) => {
     if (action === 'add') {
       if (product) {
         product.stock += quantity;
+        if (req.body.price) {
+          product.price = req.body.price;
+          product.basePrice = Math.round(req.body.price * 0.9);
+        }
       } else {
         product = new Product({
           name: item,
           category: 'Voice-Added',
-          price: 0,
-          basePrice: 0,
+          price: req.body.price || 0,
+          basePrice: req.body.price ? Math.round(req.body.price * 0.9) : 0,
           stock: quantity,
           sku: `VOICE-${Date.now()}`,
           retailerId: req.user.id,
@@ -123,13 +127,20 @@ exports.executeVoiceAction = async (req, res) => {
     } else if (action === 'update') {
       if (product) {
         product.stock = quantity;
+        if (req.body.price) {
+          product.price = req.body.price;
+          product.basePrice = Math.round(req.body.price * 0.9);
+        }
       } else {
         return res.status(404).json({ message: `Could not find an item matching ${item}` });
       }
     }
 
     if (product) await product.save();
-    res.json({ message: `Successfully ${action}ed ${quantity} ${unit} of ${item}`, product });
+    let resMessage = `Successfully ${action}ed ${quantity} ${unit} of ${item}`;
+    if (req.body.price) resMessage += ` at ₹${req.body.price}`;
+    
+    res.json({ message: resMessage, product });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -49,8 +49,16 @@ export const fetchPriceSuggestion = (productId) => API.get(`/analytics/price-sug
 export const parseVoiceText = async (text) => {
   return new Promise((resolve, reject) => {
     try {
-      const lower = text.toLowerCase();
+      let lower = text.toLowerCase();
       
+      let price = null;
+      const priceRegex = /(?:price|प्राइस|at|एट|for|₹|rs\.?)\s*(?:of|ऑफ़|of rs|ऑफ़ रु)?\s*(\d+)|(\d+)\s*(?:rupees|रुपये|रु|rs)/;
+      const priceMatch = lower.match(priceRegex);
+      if (priceMatch) {
+          price = parseInt(priceMatch[1] || priceMatch[2]);
+          lower = lower.replace(priceMatch[0], ' '); 
+      }
+
       let action = 'add';
       if (lower.includes('delete') || lower.includes('remove') || lower.includes('hatao') || lower.includes('nikalo') || lower.includes('kam karo') || lower.includes('रिमूव') || lower.includes('हटाओ') || lower.includes('निकालो') || lower.includes('डिलीट')) {
         action = 'delete';
@@ -91,6 +99,7 @@ export const parseVoiceText = async (text) => {
 
       let itemTokens = lower.replace(/\d+/g, ' ')
         .replace(/kg|kilo|gram|gm|liter|ltr|packet|pkt|quantity|qty|किलो|ग्राम|लीटर|पैकेट/g, ' ')
+        .replace(/at|एट|price|प्राइस|rupees|रुपये|rs|₹|रु/g, ' ')
         .replace(/add|delete|remove|update|karo|hatao|nikalo|set|please|insert|create/g, ' ')
         .replace(/रिमूव|हटाओ|निकालो|अपडेट|डिलीट|कम|करो|प्लीज|प्लीज़|सेट|ऐड|एड|जोड़ें|बनाएं|क्वांटिटी|मात्रा/g, ' ')
         .replace(/of|for|to|the|a|in|ऑफ़|ऑफ|का|की|के|में|को/g, ' ')
@@ -128,7 +137,8 @@ export const parseVoiceText = async (text) => {
           action,
           item,
           quantity,
-          unit
+          unit,
+          price
         }
       });
     } catch (e) {
