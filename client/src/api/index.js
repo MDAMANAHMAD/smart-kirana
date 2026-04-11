@@ -109,7 +109,11 @@ export const parseVoiceText = async (text) => {
         'चावल': 'rice', 'आटा': 'flour', 'तेल': 'oil', 'मसाले': 'spices',
         'साबुन': 'soap', 'चाय': 'tea', 'बिस्कुट': 'biscuit', 'दाल': 'pulse',
         'प्याज': 'onion', 'आलू': 'potato', 'टमाटर': 'tomato', 'मैगी': 'maggi',
-        'कोक': 'coke', 'ब्रेड': 'bread', 'अंडा': 'eggs'
+        'कोक': 'coke', 'ब्रेड': 'bread', 'अंडा': 'eggs',
+        'शुगर': 'sugar', 'सूगर': 'sugar', 'सक्कर': 'sugar', 'शक्कर': 'sugar',
+        'मिल्क': 'milk', 'राईस': 'rice', 'राइस': 'rice', 'ऑयल': 'oil', 'ऑईल': 'oil',
+        'आटा': 'flour', 'आट्टा': 'flour', 'बिस्कुट': 'biscuit', 'बिस्किट': 'biscuit',
+        'पोटैटो': 'potato', 'टोमेटो': 'tomato', 'टोमाटो': 'tomato', 'चाय': 'tea', 'टी': 'tea'
       };
 
       const words = item.split(' ').filter(w => w.trim() !== '');
