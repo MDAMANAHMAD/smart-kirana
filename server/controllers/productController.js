@@ -109,8 +109,14 @@ exports.executeVoiceAction = async (req, res) => {
       }
     } else if (action === 'delete' || action === 'remove') {
       if (product) {
-        await Product.findOneAndDelete({ _id: product._id, retailerId: req.user.id });
-        return res.json({ message: `Successfully removed ${item}`, product: null });
+        if (product.stock > quantity) {
+           product.stock -= quantity;
+           await product.save();
+           return res.json({ message: `Successfully removed ${quantity} of ${item}`, product });
+        } else {
+           await Product.findOneAndDelete({ _id: product._id, retailerId: req.user.id });
+           return res.json({ message: `Successfully removed all ${item} as stock is empty`, product: null });
+        }
       } else {
         return res.status(404).json({ message: `Could not find an item matching ${item}` });
       }
