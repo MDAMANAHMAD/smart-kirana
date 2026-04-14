@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../api';
+import { login, forgotPassword } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, HelpCircle } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -19,6 +19,18 @@ const Login = () => {
       navigate(data.user.role === 'retailer' ? '/dashboard' : '/');
     } catch (err) {
       alert(err.response?.data?.message || 'Login failed');
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const email = prompt("Please enter your registered email address:");
+    if (!email) return;
+
+    try {
+      const { data } = await forgotPassword({ email });
+      alert(data.message);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error occurred');
     }
   };
 
@@ -47,7 +59,16 @@ const Login = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-sm font-bold text-gray-700">Password</label>
+                <button 
+                  type="button" 
+                  onClick={handleForgotPassword}
+                  className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <HelpCircle size={12} /> Forgot?
+                </button>
+              </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={20} />
                 <input

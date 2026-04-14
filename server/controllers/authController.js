@@ -59,3 +59,21 @@ exports.getRetailers = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
+    if (!user) return res.status(404).json({ message: 'No user found with this email' });
+
+    // In a real app, send a reset link. Here, we'll reset to a default for demo.
+    const newPassword = 'recovered123';
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: `Password reset successful. Your new temporary password is: ${newPassword}` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
